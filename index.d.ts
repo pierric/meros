@@ -6,6 +6,14 @@ export interface Options {
 	 * @default false
 	 */
 	multiple: boolean;
+
+	/**
+	 * The text encoding scheme to decode the payload. This option is
+	 * only honored in browser.
+	 *
+	 * @default 'utf-8'
+	 */
+	encoding: str;
 }
 
 export type Part<Body, Fallback> =
