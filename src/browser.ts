@@ -1,8 +1,7 @@
 import type { Options, Part } from 'meros';
 
 import type { Arrayable } from './shared';
-
-let decoder = new TextDecoder();
+import { Buffer } from 'buffer';
 
 async function* generate<T>(
 	stream: ReadableStream<Uint8Array>,
@@ -12,8 +11,8 @@ async function* generate<T>(
 	let reader = stream.getReader();
 	let is_eager = !options || !options.multiple;
 
-	let len_boundary = boundary.length;
-	let buffer = '';
+	let len_boundary = Buffer.byteLength(boundary);
+	let buffer = Buffer.alloc(0);
 	let payloads = [];
 	let idx_boundary;
 	let in_main;
@@ -22,10 +21,10 @@ async function* generate<T>(
 	try {
 		let result: ReadableStreamReadResult<Uint8Array>;
 		outer: while (!(result = await reader.read()).done) {
-			let chunk = decoder.decode(result.value);
+			let chunk = Buffer.from(result.value);
 
-			idx_boundary = buffer.length;
-			buffer += chunk;
+			idx_boundary = buffer.byteLength;
+			buffer = Buffer.concat([buffer, chunk]);
 
 			let idx_chunk = chunk.indexOf(boundary);
 			// if the chunk has a boundary, simply use it
