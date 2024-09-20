@@ -2,11 +2,12 @@ import type { Options, Part } from 'meros';
 
 import type { Arrayable } from './shared';
 
+let decoder = new TextDecoder();
+
 async function* generate<T>(
 	stream: ReadableStream<Uint8Array>,
 	boundary: string,
 	options?: Options,
-	decoder: TextDecoder,
 ): AsyncGenerator<Arrayable<Part<T, string>>> {
 	let reader = stream.getReader();
 	let is_eager = !options || !options.multiple;
@@ -94,8 +95,6 @@ async function* generate<T>(
 export async function meros<T = object>(response: Response, options?: Options) {
 	if (!response.ok || !response.body || response.bodyUsed) return response;
 
-	let decoder = new TextDecoder(options?.encoding || 'utf-8');
-
 	let ctype = response.headers.get('content-type');
 	if (!ctype || !~ctype.indexOf('multipart/')) return response;
 
@@ -111,5 +110,5 @@ export async function meros<T = object>(response: Response, options?: Options) {
 			.replace(/"/g, '');
 	}
 
-	return generate<T>(response.body, `--${boundary}`, options, decoder);
+	return generate<T>(response.body, `--${boundary}`, options);
 }
